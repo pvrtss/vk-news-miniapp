@@ -17,4 +17,6 @@ yarn start
 
 ## Идентификатор appid - 51916848
 
-## Попробовать - [тык](https://vk.com/app51916848#/)
+## Попробовать - [*тык*](https://vk.com/app51916848#/)
+
+## Прод-ссылка - [*тык*]([https://vk.com/app51916848#/](https://prod-app51916848-ac6552554a47.pages-ac.vk-apps.com/index.html))
