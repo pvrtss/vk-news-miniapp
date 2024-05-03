@@ -1,0 +1,21 @@
+.skeleton {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0px,
+    #e8e8e8 80px,
+    transparent 160px
+  );
+  background-size: calc(2 * 100vw);
+  animation: shine-lines 2s infinite linear;
+  height: 232px;
+}
+
+@keyframes shine-lines {
+  0% {
+    background-position: -300px;
+  }
+  40%,
+  100% {
+    background-position: calc(100vw);
+  }
+}

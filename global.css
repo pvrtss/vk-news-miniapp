@@ -1,0 +1,3 @@
+div:has(> p.text) {
+  white-space: unset !important;
+}

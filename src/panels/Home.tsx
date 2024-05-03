@@ -1,38 +1,68 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import {
   Panel,
   PanelHeader,
   Header,
   Group,
-  NavIdProps,
   CardGrid,
   Link,
   PanelSpinner,
+  Spinner,
+  Spacing,
+  Placeholder,
 } from "@vkontakte/vkui";
 import { useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
+import { NewsCard } from "../entities/news/";
+import { HomeProps } from "../typings";
+import { useAppSelector, useAppDispatch } from "../utils";
+import { change, inc } from "../features/drawableIds/drawableIdsSlice";
 
-import { NewsCard } from "../components";
-
-export const Home: FC<NavIdProps> = ({ id }) => {
+export const Home: FC<HomeProps> = ({ id, newsIds, onReloadClick }) => {
   const routeNavigator = useRouteNavigator();
-  const [newsIds, setNewsIds] = useState<number[] | undefined>(undefined);
+  const drawableNewsIds = useAppSelector((state) => state.drawableIds.list);
+  const dispatch = useAppDispatch();
+  const observerTarget = useRef(null);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  // dispatch(change(newsIds ? [...newsIds.slice(0, 10)] : []));
+
   useEffect(() => {
-    fetch("https://hacker-news.firebaseio.com/v0/newstories.json")
-      .then((res) => res.json())
-      .then((ids) => setNewsIds(ids.slice(0, 100)));
-    const interval = setInterval(() => {
-      fetch("https://hacker-news.firebaseio.com/v0/newstories.json")
-        .then((res) => res.json())
-        .then((ids) => setNewsIds(ids.slice(0, 100)));
-    }, 60000);
+    const target = observerTarget.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (newsIds) {
+            if (drawableNewsIds.length < newsIds.length) {
+              dispatch(inc(newsIds));
+              console.log("true");
+            } else {
+              setHasMore(false);
+              console.log("false");
+            }
+          }
+        }
+      },
+      { threshold: 1 }
+    );
+
+    if (target) {
+      observer.observe(target);
+    }
+
     return () => {
-      clearInterval(interval);
+      if (target) {
+        observer.unobserve(target);
+      }
     };
-  }, []);
+  }, [observerTarget, newsIds, dispatch, drawableNewsIds]);
+
+  const handleReload = useCallback(() => {
+    dispatch(change(newsIds ? [...newsIds.slice(0, 10)] : []));
+    onReloadClick();
+  }, [dispatch, newsIds, onReloadClick]);
 
   const news = newsIds ? (
     <CardGrid size="l">
-      {newsIds.map((id) => (
+      {drawableNewsIds.map((id) => (
         <NewsCard
           id={id}
           key={id}
@@ -44,13 +74,6 @@ export const Home: FC<NavIdProps> = ({ id }) => {
     <PanelSpinner />
   );
 
-  const reloadNews = useCallback(() => {
-    setNewsIds(undefined);
-    fetch("https://hacker-news.firebaseio.com/v0/newstories.json")
-      .then((res) => res.json())
-      .then((ids) => setNewsIds(ids.slice(0, 100)));
-  }, []);
-
   return (
     <Panel id={id}>
       <PanelHeader>Новости</PanelHeader>
@@ -59,13 +82,21 @@ export const Home: FC<NavIdProps> = ({ id }) => {
         header={
           <Header
             mode="secondary"
-            aside={<Link onClick={reloadNews}>Обновить</Link>}
+            aside={<Link onClick={handleReload}>Обновить</Link>}
           >
             Последние новости
           </Header>
         }
       >
         {news}
+        <Spacing size={32} />
+        {hasMore ? (
+          <div ref={observerTarget} style={{ paddingBottom: 100 }}>
+            <Spinner />
+          </div>
+        ) : (
+          <Placeholder>На этом все!</Placeholder>
+        )}
       </Group>
     </Panel>
   );

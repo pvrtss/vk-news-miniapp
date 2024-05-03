@@ -5,7 +5,7 @@ export interface NewsCardProps {
   onClick: () => void;
 }
 
-export interface NewsItemProps {
+export interface ItemProps {
   by: string;
   descendants?: number;
   id: number;
@@ -15,9 +15,15 @@ export interface NewsItemProps {
   title?: string;
   type: string;
   url?: string;
-  text?: HTMLElement;
+  text?: TrustedHTML;
+  deleted?: boolean;
 }
 
-// export interface NewsPageProps extends NavIdProps {
-//   newsItem: NewsItemProps;
-// }
+export interface HomeProps extends NavIdProps {
+  newsIds: number[] | undefined;
+  onReloadClick: () => void;
+}
+
+export interface CommentProps {
+  id: number;
+}

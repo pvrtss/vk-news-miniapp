@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import {
   Headline,
   NavIdProps,
@@ -12,29 +12,31 @@ import {
   Text,
 } from "@vkontakte/vkui";
 import { useParams, useRouteNavigator } from "@vkontakte/vk-mini-apps-router";
-import { NewsItemProps } from "../typings";
+import { useAppSelector, useAppDispatch } from "../utils";
+import { Comment } from "../entities/comment";
+import { getItemById } from "../entities/news";
+import { add } from "../features/itemsList/ItemsListSlice";
 
 export const NewsPage: FC<NavIdProps> = ({ id }) => {
   const routeNavigator = useRouteNavigator();
   const params = useParams<"id">();
-  const [newsItem, setNewsItem] = useState<NewsItemProps | undefined>(
-    undefined
-  );
+  const newsList = useAppSelector((state) => state.newsList.list);
+  const dispatch = useAppDispatch();
+  const newsItem = params?.id ? newsList[params?.id] : undefined;
+  const idx = params ? (params.id ? Number(params.id) : -1) : -1;
   useEffect(() => {
-    params &&
-      params.id &&
-      fetch(`https://hacker-news.firebaseio.com/v0/item/${params.id}.json`)
-        .then((res) => res.json())
-        .then((item) => setNewsItem(item));
-  }, []);
+    if (!newsList[idx]) {
+      getItemById(idx).then((item) => dispatch(add(item)));
+    }
+  }, [dispatch, idx, newsList]);
   return (
     <Panel id={id}>
       <PanelHeader
         before={<PanelHeaderBack onClick={() => routeNavigator.back()} />}
       >
-        Одна Новость
+        Новость
       </PanelHeader>
-      {newsItem && (
+      {newsItem ? (
         <div style={{ marginLeft: 16 }}>
           <Title level="1" style={{ marginTop: 16 }}>
             {newsItem.title}
@@ -64,9 +66,13 @@ export const NewsPage: FC<NavIdProps> = ({ id }) => {
             <Separator />
           </Spacing>
           <Title level="2">Комментарии ({newsItem.descendants})</Title>
+          {newsItem.kids &&
+            newsItem.kids.map((kid) => <Comment id={kid} key={kid} />)}
+          <Spacing size={16}></Spacing>
         </div>
+      ) : (
+        <Placeholder>Упс! Новость недоступна</Placeholder>
       )}
-      {/* <Placeholder>новость</Placeholder> */}
     </Panel>
   );
 };
