@@ -19,7 +19,11 @@ export const NewsCard: FC<NewsCardProps> = ({ id, onClick }) => {
   const newsItem = newsList[id];
   useEffect(() => {
     if (!newsList[id]) {
-      getItemById(id).then((item) => dispatch(add(item)));
+      getItemById(id).then((item) => {
+        return item !== null
+          ? dispatch(add(item))
+          : getItemById(id).then((item) => dispatch(add(item)));
+      });
     }
   }, [dispatch, id, newsList]);
 

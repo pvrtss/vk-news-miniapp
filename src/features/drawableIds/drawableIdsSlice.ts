@@ -22,9 +22,19 @@ export const drawableIdsSlice = createSlice({
         ...action.payload.slice(state.list.length, state.list.length + 10),
       ];
     },
+    addNewIfAny: (state, action: PayloadAction<number[]>) => {
+      const stateLatest = state.list[0];
+      const stateLatestNewPos = action.payload.indexOf(stateLatest);
+      if (stateLatestNewPos > 0) {
+        state.list = [
+          ...action.payload.slice(0, stateLatestNewPos),
+          ...state.list,
+        ];
+      }
+    },
   },
 });
 
-export const { change, inc } = drawableIdsSlice.actions;
+export const { change, inc, addNewIfAny } = drawableIdsSlice.actions;
 
 export default drawableIdsSlice.reducer;

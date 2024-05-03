@@ -23,7 +23,6 @@ export const Home: FC<HomeProps> = ({ id, newsIds, onReloadClick }) => {
   const dispatch = useAppDispatch();
   const observerTarget = useRef(null);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  // dispatch(change(newsIds ? [...newsIds.slice(0, 10)] : []));
 
   useEffect(() => {
     const target = observerTarget.current;
@@ -33,10 +32,8 @@ export const Home: FC<HomeProps> = ({ id, newsIds, onReloadClick }) => {
           if (newsIds) {
             if (drawableNewsIds.length < newsIds.length) {
               dispatch(inc(newsIds));
-              console.log("true");
             } else {
               setHasMore(false);
-              console.log("false");
             }
           }
         }
